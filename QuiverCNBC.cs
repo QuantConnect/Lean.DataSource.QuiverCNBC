@@ -38,12 +38,12 @@ namespace QuantConnect.DataSource
         /// <summary>
         /// Time passed between the date of the data and the time the data became available to us
         /// </summary>
-        public TimeSpan Period { get; set; } = TimeSpan.FromDays(1);
+        private TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
         /// Time the data became available
         /// </summary>
-        public override DateTime EndTime => Time + Period;
+        public override DateTime EndTime => Time + _period;
 
         /// <summary>
         /// Return the URL string source of the file. This will be converted to a stream
@@ -58,7 +58,7 @@ namespace QuantConnect.DataSource
                 Path.Combine(
                     Globals.DataFolder,
                     "alternative",
-                    "mycustomdatatype",
+                    "quiver",
                     $"{config.Symbol.Value.ToLowerInvariant()}.csv"
                 ),
                 SubscriptionTransportMedium.LocalFile
@@ -82,7 +82,7 @@ namespace QuantConnect.DataSource
             {
                 Symbol = config.Symbol,
                 SomeCustomProperty = csv[1],
-                Time = parsedDate - Period,
+                Time = parsedDate - _period,
             };
         }
 

@@ -1,12 +1,12 @@
 ### Meta
-- **Dataset name**: *`datasetName`*
+- **Dataset name**: *`CNBC`*
 - **Vendor name**: *`vendorName`*
 - **Vendor Website**: *`vendorWebsite`*
 
 
 ### Introduction
 
-*`datasetName`* by *`vendorName`* *`/is/tracks`* *`assetsInMarket`* *`datasetProperty`*. The data covers *`coverageNumber`* *`coverageAssetType`*, starting in *`startDate`*, and is delivered on a *`resolution`* frequency. This dataset is created by *`methodology`*. 
+*`CNBC`* by *`vendorName`* *`/is/tracks`* *`assetsInMarket`* *`datasetProperty`*. The data covers *`coverageNumber`* *`coverageAssetType`*, starting in *`startDate`*, and is delivered on a *`resolution`* frequency. This dataset is created by *`methodology`*. 
 
 ### About the Provider
 *`vendorName`* was founded by *`founderName(s)`* in *`foundingYear`*, with the goal of *`missionStatement`*. *`vendorName`* provides access to *`dataTypes`* for *`targetDemographic`*. 
