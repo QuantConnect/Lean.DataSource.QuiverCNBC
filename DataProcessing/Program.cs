@@ -39,15 +39,15 @@ namespace QuantConnect.DataProcessing
                 "alternative",
                 "vendorname");
 
-            MyCustomDataDownloader instance = null;
+            QuiverCNBCDataDownloader instance = null;
             try
             {
                 // Pass in the values we got from the configuration into the downloader/converter.
-                instance = new MyCustomDataDownloader(destinationDirectory);
+                instance = new QuiverCNBCDataDownloader(destinationDirectory);
             }
             catch (Exception err)
             {
-                Log.Error(err, $"QuantConnect.DataProcessing.Program.Main(): The downloader/converter for {MyCustomDataDownloader.VendorDataName} {MyCustomDataDownloader.VendorDataName} data failed to be constructed");
+                Log.Error(err, $"QuantConnect.DataProcessing.Program.Main(): The downloader/converter for {QuiverCNBCDataDownloader.VendorDataName} {QuiverCNBCDataDownloader.VendorDataName} data failed to be constructed");
                 Environment.Exit(1);
             }
 
@@ -59,13 +59,13 @@ namespace QuantConnect.DataProcessing
                 var success = instance.Run();
                 if (!success)
                 {
-                    Log.Error($"QuantConnect.DataProcessing.Program.Main(): Failed to download/process {MyCustomDataDownloader.VendorName} {MyCustomDataDownloader.VendorDataName} data");
+                    Log.Error($"QuantConnect.DataProcessing.Program.Main(): Failed to download/process {QuiverCNBCDataDownloader.VendorName} {QuiverCNBCDataDownloader.VendorDataName} data");
                     Environment.Exit(1);
                 }
             }
             catch (Exception err)
             {
-                Log.Error(err, $"QuantConnect.DataProcessing.Program.Main(): The downloader/converter for {MyCustomDataDownloader.VendorDataName} {MyCustomDataDownloader.VendorDataName} data exited unexpectedly");
+                Log.Error(err, $"QuantConnect.DataProcessing.Program.Main(): The downloader/converter for {QuiverCNBCDataDownloader.VendorDataName} {QuiverCNBCDataDownloader.VendorDataName} data exited unexpectedly");
                 Environment.Exit(1);
             }
             finally

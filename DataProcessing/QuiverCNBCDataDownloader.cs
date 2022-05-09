@@ -36,9 +36,9 @@ using QuantConnect.Util;
 namespace QuantConnect.DataProcessing
 {
     /// <summary>
-    /// MyCustomDataDownloader implementation.
+    /// QuiverCNBCDataDownloader implementation.
     /// </summary>
-    public class MyCustomDataDownloader : IDisposable
+    public class QuiverCNBCDataDownloader : IDisposable
     {
         public const string VendorName = "VendorName";
         public const string VendorDataName = "VendorDataName";
@@ -71,7 +71,7 @@ namespace QuantConnect.DataProcessing
         /// </summary>
         /// <param name="destinationFolder">The folder where the data will be saved</param>
         /// <param name="apiKey">The Vendor API key</param>
-        public MyCustomDataDownloader(string destinationFolder, string apiKey = null)
+        public QuiverCNBCDataDownloader(string destinationFolder, string apiKey = null)
         {
             _destinationFolder = Path.Combine(destinationFolder, VendorDataName);
             _universeFolder = Path.Combine(_destinationFolder, "universe");
@@ -96,7 +96,7 @@ namespace QuantConnect.DataProcessing
 
             throw new NotImplementedException();
 
-            Log.Trace($"MyCustomDataDownloader.Run(): Finished in {stopwatch.Elapsed.ToStringInvariant(null)}");
+            Log.Trace($"QuiverCNBCDataDownloader.Run(): Finished in {stopwatch.Elapsed.ToStringInvariant(null)}");
             return true;
         }
 
@@ -130,7 +130,7 @@ namespace QuantConnect.DataProcessing
                         var response = await client.GetAsync(Uri.EscapeUriString(url));
                         if (response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            Log.Error($"MyCustomDataDownloader.HttpRequester(): Files not found at url: {Uri.EscapeUriString(url)}");
+                            Log.Error($"QuiverCNBCDataDownloader.HttpRequester(): Files not found at url: {Uri.EscapeUriString(url)}");
                             response.DisposeSafely();
                             return string.Empty;
                         }
@@ -151,7 +151,7 @@ namespace QuantConnect.DataProcessing
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e, $"MyCustomDataDownloader.HttpRequester(): Error at HttpRequester. (retry {retries}/{_maxRetries})");
+                    Log.Error(e, $"QuiverCNBCDataDownloader.HttpRequester(): Error at HttpRequester. (retry {retries}/{_maxRetries})");
                     Thread.Sleep(1000);
                 }
             }

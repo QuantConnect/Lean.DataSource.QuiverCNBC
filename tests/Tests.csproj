@@ -4,8 +4,8 @@
     <RootNamespace>QuantConnect.DataLibrary.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Demonstration.cs" Link="Demonstration.cs" />
-    <Compile Include="..\DemonstrationUniverse.cs" Link="DemonstrationUniverse.cs" />
+    <Compile Include="..\QuiverCNBCAlgorithm.cs" Link="QuiverCNBCAlgorithm.cs" />
+    <Compile Include="..\QuiverCNBCUniverseSelectionAlgorithm.cs" Link="QuiverCNBCUniverseSelectionAlgorithm.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="protobuf-net" Version="3.0.29" />
