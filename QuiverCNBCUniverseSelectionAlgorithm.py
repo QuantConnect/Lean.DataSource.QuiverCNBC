@@ -37,10 +37,10 @@ class QuiverCNBCUniverseSelectionAlgorithm(QCAlgorithm):
         :return: List of Symbol objects '''
 
         for datum in data:
-            self.Log(f"{datum.Symbol},{datum.Followers},{datum.DayPercentChange},{datum.WeekPercentChange}")
+            self.Log(f"{datum.Symbol},{datum.Traders},{datum.Direction},{datum.Note}")
         
         # define our selection criteria
-        return [d.Symbol for d in data if d.SomeCustomProperty == 'buy']
+        return [d.Symbol for d in data if d.Direction == OrderDirection.Buy]
 
     def OnSecuritiesChanged(self, changes):
         ''' Event fired each time that we add/remove securities from the data feed

@@ -15,11 +15,18 @@
 */
 
 using System;
+using System.Globalization;
+using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NodaTime;
 using ProtoBuf;
-using System.IO;
 using QuantConnect.Data;
+using QuantConnect.Orders;
+using QuantConnect.Util;
+using static QuantConnect.StringExtensions;
 using System.Collections.Generic;
+
 
 namespace QuantConnect.DataSource
 {
@@ -30,10 +37,26 @@ namespace QuantConnect.DataSource
     public class QuiverCNBC : BaseData
     {
         /// <summary>
-        /// Some custom data property
+        /// Contract description
         /// </summary>
-        [ProtoMember(2000)]
-        public string SomeCustomProperty { get; set; }
+        [ProtoMember(11)]
+        [JsonProperty(PropertyName = "Note")]
+        public string Note { get; set; }
+        
+        /// <summary>
+        /// Awarding Agency Name
+        /// </summary>
+        [ProtoMember(12)]
+        [JsonProperty(PropertyName = "Direction")]
+        [JsonConverter(typeof(TransactionDirectionJsonConverter))]
+        public OrderDirection Direction { get; set; }
+
+        /// <summary>
+        /// Total dollars obligated under the given contract
+        /// </summary>
+        [ProtoMember(13)]
+        [JsonProperty(PropertyName = "Trader")]
+        public string Trader { get; set; }
 
         /// <summary>
         /// Time passed between the date of the data and the time the data became available to us
@@ -81,8 +104,10 @@ namespace QuantConnect.DataSource
             return new QuiverCNBC
             {
                 Symbol = config.Symbol,
-                SomeCustomProperty = csv[1],
                 Time = parsedDate - _period,
+                Note = csv[1],
+                Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[2], true),
+                Trader = csv[3]
             };
         }
 
@@ -97,7 +122,9 @@ namespace QuantConnect.DataSource
                 Symbol = Symbol,
                 Time = Time,
                 EndTime = EndTime,
-                SomeCustomProperty = SomeCustomProperty,
+                Note = Note,
+                Direction = Direction,
+                Trader = Trader,
             };
         }
 
@@ -125,7 +152,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Symbol} - {SomeCustomProperty}";
+            return $"{Symbol} - {Trader} - {Direction}";
         }
 
         /// <summary>

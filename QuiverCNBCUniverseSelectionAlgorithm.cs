@@ -19,6 +19,7 @@ using System.Linq;
 using QuantConnect.Data;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.DataSource;
+using QuantConnect.Orders;
 
 namespace QuantConnect.Algorithm.CSharp
 {
@@ -44,12 +45,12 @@ namespace QuantConnect.Algorithm.CSharp
             {
                 foreach (var datum in data)
                 {
-                    Log($"{datum.Symbol},{datum.SomeCustomProperty},{datum.SomeNumericProperty}");
+                    Log($"{datum.Symbol},{datum.Traders},{datum.Direction}");
                 }
 
                 // define our selection criteria
                 return from d in data
-                       where d.SomeCustomProperty == "buy"
+                       where d.Direction == OrderDirection.Buy
                        select d.Symbol;
             });
         }

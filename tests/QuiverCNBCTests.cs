@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using QuantConnect.Data;
 using QuantConnect.DataSource;
+using QuantConnect.Orders;
 
 namespace QuantConnect.DataLibrary.Tests
 {
@@ -92,7 +93,9 @@ namespace QuantConnect.DataLibrary.Tests
                 Symbol = Symbol.Empty,
                 Time = DateTime.Today,
                 DataType = MarketDataType.Base,
-                SomeCustomProperty = "This is some market related information"
+                Note = "N/a",
+                Direction = OrderDirection.Buy,
+                Trader = "Jim Cramer",
             };
         }
     }

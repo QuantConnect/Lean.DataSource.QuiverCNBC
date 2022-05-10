@@ -33,9 +33,9 @@ class QuiverCNBCAlgorithm(QCAlgorithm):
         data = slice.Get(QuiverCNBC)
         if data:
             custom_data = data[self.custom_data_symbol]
-            if custom_data.SomeCustomProperty == "buy":
+            if custom_data.Direction == OrderDirection.Buy:
                 self.SetHoldings(self.equitySymbol, 1)
-            elif custom_data.SomeCustomProperty == "sell":
+            elif custom_data.Direction == OrderDirection.Sell:
                 self.SetHoldings(self.equitySymbol, -1)
 
     def OnOrderEvent(self, orderEvent):

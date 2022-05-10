@@ -21,6 +21,7 @@ using System.IO;
 using QuantConnect.Data;
 using System.Collections.Generic;
 using System.Globalization;
+using QuantConnect.Orders;
 
 namespace QuantConnect.DataSource
 {
@@ -31,14 +32,19 @@ namespace QuantConnect.DataSource
     public class QuiverCNBCUniverse : BaseData
     {
         /// <summary>
-        /// Some custom data property
+        /// Contract description
         /// </summary>
-        public string SomeCustomProperty { get; set; } 
+        public string Note { get; set; }
+        
+        /// <summary>
+        /// Awarding Agency Name
+        /// </summary>
+        public OrderDirection Direction { get; set; }
 
         /// <summary>
-        /// Some custom data property
+        /// Total dollars obligated under the given contract
         /// </summary>
-        public decimal SomeNumericProperty { get; set; }
+        public string[] Traders { get; set; }
 
         /// <summary>
         /// Time passed between the date of the data and the time the data became available to us
@@ -83,15 +89,13 @@ namespace QuantConnect.DataSource
         {
             var csv = line.Split(','); 
 
-            var someNumericProperty = decimal.Parse(csv[2], NumberStyles.Any, CultureInfo.InvariantCulture); 
-
             return new QuiverCNBCUniverse
             {
                 Symbol = new Symbol(SecurityIdentifier.Parse(csv[0]), csv[1]),
-                SomeNumericProperty = someNumericProperty,
-                SomeCustomProperty = csv[3],
                 Time =  date - _period,
-                Value = someNumericProperty
+                Note = csv[2],
+                Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[3], true),
+                Traders = csv[4].Split(";"),
             };
         }
 
@@ -110,7 +114,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Symbol} - {Value}";
+            return $"{Symbol} - {Traders.Length} - {Direction}";
         }
 
         /// <summary>

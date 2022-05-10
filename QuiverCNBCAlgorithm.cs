@@ -51,11 +51,11 @@ namespace QuantConnect.DataLibrary.Tests
             if (!data.IsNullOrEmpty())
             {
                 // based on the custom data property we will buy or short the underlying equity
-                if (data[_customDataSymbol].SomeCustomProperty == "buy")
+                if (data[_customDataSymbol].Direction == OrderDirection.Buy)
                 {
                     SetHoldings(_equitySymbol, 1);
                 }
-                else if (data[_customDataSymbol].SomeCustomProperty == "sell")
+                else if (data[_customDataSymbol].Direction == OrderDirection.Sell)
                 {
                     SetHoldings(_equitySymbol, -1);
                 }
