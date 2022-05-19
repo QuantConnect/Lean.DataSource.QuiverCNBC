@@ -175,7 +175,7 @@ namespace QuantConnect.DataProcessing
                                             continue;
                                         }
 
-                                        var curTdate = contract.Date.Value.Date;
+                                        var curTdate = contract.Date;
 
                                         if (curTdate == today)
                                         {
@@ -189,7 +189,7 @@ namespace QuantConnect.DataProcessing
 
                                         var date = $"{contract.Date:yyyyMMdd}";
 
-                                        var curRow = $"{date},{contract.Notes},{contract.Direction},{contract.Traders}";
+                                        var curRow = $"{date},{contract.Note},{contract.Direction},{contract.Trader}";
 
                                         csvContents.Add(curRow);
 
@@ -410,6 +410,16 @@ namespace QuantConnect.DataProcessing
             /// </summary>
             [JsonProperty(PropertyName = "Ticker")]
             public string Ticker { get; set; }
+        }
+
+        /// <summary>
+        /// creates an IEnumerable for a range of dates
+        /// </summary>
+        /// <returns>IEnumerable for a range of dates</returns>
+        public IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
+        {
+            for(var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
+                yield return day;
         }
 
         /// <summary>
