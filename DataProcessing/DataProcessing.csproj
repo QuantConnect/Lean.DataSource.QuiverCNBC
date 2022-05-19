@@ -15,12 +15,6 @@
         <ProjectReference Include="..\QuantConnect.DataSource.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <None Remove="CLRImports.py" />
-        <Content Include="CLRImports.py">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-    <ItemGroup>
         <None Remove="config.json" />
         <Content Include="config.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
