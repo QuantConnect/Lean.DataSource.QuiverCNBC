@@ -397,6 +397,21 @@ namespace QuantConnect.DataProcessing
             return true;
         }
 
+        private class Company
+        {
+            /// <summary>
+            /// The name of the company
+            /// </summary>
+            [JsonProperty(PropertyName = "Name")]
+            public string Name { get; set; }
+
+            /// <summary>
+            /// The ticker/symbol for the company
+            /// </summary>
+            [JsonProperty(PropertyName = "Ticker")]
+            public string Ticker { get; set; }
+        }
+
         /// <summary>
         /// Disposes of unmanaged resources
         /// </summary>
