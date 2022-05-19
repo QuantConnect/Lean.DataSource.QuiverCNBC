@@ -76,6 +76,7 @@ namespace QuantConnect.DataProcessing
             _destinationFolder = Path.Combine(destinationFolder, VendorDataName);
             _universeFolder = Path.Combine(_destinationFolder, "universe");
             _clientKey = apiKey ?? Config.Get("vendor-auth-token");
+            Console.WriteLine(_clientKey);
             _canCreateUniverseFiles = Directory.Exists(Path.Combine(_dataFolder, "equity", "usa", "map_files"));
 
             // Represents rate limits of 10 requests per 1.1 second
