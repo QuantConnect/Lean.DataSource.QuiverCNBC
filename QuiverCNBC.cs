@@ -36,6 +36,14 @@ namespace QuantConnect.DataSource
     [ProtoContract(SkipConstructor = true)]
     public class QuiverCNBC : BaseData
     {
+         /// <summary>
+        /// Date that the CNBC spend was reported
+        /// </summary>
+        [ProtoMember(10)]
+        [JsonProperty(PropertyName = "Date")]
+        [JsonConverter(typeof(DateTimeJsonConverter), "yyyy-MM-dd")]
+        public DateTime Date { get; set; }
+        
         /// <summary>
         /// Contract description
         /// </summary>

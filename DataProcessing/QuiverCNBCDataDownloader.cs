@@ -170,7 +170,7 @@ namespace QuantConnect.DataProcessing
                                     foreach (var contract in recentCNBC)
                                     {
                                         
-                                        if (contract.ReportDate == null)
+                                        if (contract.Trader == null)
                                         {
                                             continue;
                                         }
