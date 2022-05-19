@@ -40,8 +40,8 @@ namespace QuantConnect.DataProcessing
     /// </summary>
     public class QuiverCNBCDataDownloader : IDisposable
     {
-        public const string VendorName = "VendorName";
-        public const string VendorDataName = "VendorDataName";
+        public const string VendorName = "Quiver";
+        public const string VendorDataName = "CNBC";
         
         private readonly string _destinationFolder;
         private readonly string _universeFolder;
@@ -67,7 +67,7 @@ namespace QuantConnect.DataProcessing
         private readonly RateGate _indexGate;
 
         /// <summary>
-        /// Creates a new instance of <see cref="MyCustomData"/>
+        /// Creates a new instance of <see cref="QuiverCNBC"/>
         /// </summary>
         /// <param name="destinationFolder">The folder where the data will be saved</param>
         /// <param name="apiKey">The Vendor API key</param>
@@ -94,7 +94,161 @@ namespace QuantConnect.DataProcessing
             var stopwatch = Stopwatch.StartNew();
             var today = DateTime.UtcNow.Date;
 
-            throw new NotImplementedException();
+            var mapFileProvider = new LocalZipMapFileProvider();
+            mapFileProvider.Initialize(new DefaultDataProvider());
+
+            try
+            {
+                var companies = GetCompanies().Result.DistinctBy(x => x.Ticker).ToList();
+                var count = companies.Count;
+                var currentPercent = 0.05;
+                var percent = 0.05;
+                var i = 0;
+
+                Log.Trace(
+                    $"QuiverCNBCDataDownloader.Run(): Start processing {count.ToStringInvariant()} companies");
+
+                var tasks = new List<Task>();
+                var minDate = today;
+
+                // This is the dictionary that
+                // key: Date
+                // value: List<String> csv content of that specific date
+                IDictionary<DateTime, List<string>> MastercsvContents = new Dictionary<DateTime, List<string>>();
+
+                foreach (var company in companies)
+                {
+                    // Include tickers that are "defunct".
+                    // Remove the tag because it cannot be part of the API endpoint.
+                    // This is separate from the NormalizeTicker(...) method since
+                    // we don't convert tickers with `-`s into the format we can successfully
+                    // index mapfiles with.
+                    var quiverTicker = company.Ticker;
+                    string ticker;
+
+
+                    if (!TryNormalizeDefunctTicker(quiverTicker, out ticker))
+                    {
+                        Log.Error(
+                            $"QuiverCNBCDataDownloader(): Defunct ticker {quiverTicker} is unable to be parsed. Continuing...");
+                        continue;
+                    }
+
+                    // Begin processing ticker with a normalized value
+                    Log.Trace($"QuiverCNBCDataDownloader.Run(): Processing {ticker}");
+
+                    // Makes sure we don't overrun Quiver rate limits accidentally
+                    _indexGate.WaitToProceed();
+                    var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
+
+                    tasks.Add(
+                        HttpRequester($"live/cnbc?ticker={ticker}")
+                            .ContinueWith(
+                                y =>
+                                {
+                                    i++;
+
+                                    if (y.IsFaulted)
+                                    {
+                                        Log.Error(
+                                            $"QuiverCNBCDataDownloader.Run(): Failed to get data for {company}");
+                                        return;
+                                    }
+
+                                    var result = y.Result;
+                                    if (string.IsNullOrEmpty(result))
+                                    {
+                                        // We've already logged inside HttpRequester
+                                        return;
+                                    }
+
+                                    var recentCNBC =
+                                        JsonConvert.DeserializeObject<List<QuiverCNBC>>(result,
+                                            _jsonSerializerSettings);
+                                    var csvContents = new List<string>();
+
+                                    foreach (var contract in recentCNBC)
+                                    {
+                                        
+                                        if (contract.ReportDate == null)
+                                        {
+                                            continue;
+                                        }
+
+                                        var curTdate = contract.Date.Value.Date;
+
+                                        if (curTdate == today)
+                                        {
+                                            Log.Trace($"Encountered data from today for {ticker}: {today:yyyy-MM-dd} - Skipping");
+                                            continue;
+                                        }
+
+                                        if( DateTime.Compare(curTdate, minDate) < 0){
+                                            minDate = curTdate;
+                                        }
+
+                                        var date = $"{contract.Date:yyyyMMdd}";
+
+                                        var curRow = $"{date},{contract.Notes},{contract.Direction},{contract.Traders}";
+
+                                        csvContents.Add(curRow);
+
+                                        MastercsvContents[curTdate].Add(curRow);
+
+                                        if (!_canCreateUniverseFiles)
+                                            continue;
+
+                                        var queue = _tempData.GetOrAdd(date, new ConcurrentQueue<string>());
+                                        //universe creation
+                                        queue.Enqueue($"{sid},{ticker},{curRow}");
+                                    }
+
+                                    if (csvContents.Count != 0)
+                                    {
+                                        SaveContentToFile(_destinationFolder, ticker, csvContents);
+                                    }
+
+                                    var percentageDone = i / count;
+                                    if (percentageDone >= currentPercent)
+                                    {
+                                        Log.Trace(
+                                            $"QuiverCNBCDataDownloader.Run(): {percentageDone.ToStringInvariant("P2")} complete");
+                                        currentPercent += percent;
+                                    }
+                                }
+                            )
+                    );
+
+                    if (tasks.Count == 10)
+                    {
+                        Task.WaitAll(tasks.ToArray());
+                        tasks.Clear();
+                    }
+                }
+
+                if (tasks.Count != 0)
+                {
+                    Task.WaitAll(tasks.ToArray());
+                    tasks.Clear();
+                    // we will save the files by group dates
+                    // tasks are all done and the MastercsvContents is filled need to seperate the 
+                    // collected data by dates they occured
+                    foreach (DateTime day in EachDay(minDate, today)){
+                        var d = new List<string>();
+                        //second for loop to collect all prior days up to the current day variable
+                        foreach (DateTime daytwo in EachDay(minDate, day)){
+                            d.AddRange(MastercsvContents[daytwo]);
+                        }
+                        SaveContentToFile(Path.Combine(_destinationFolder, "universe"), day.ToString(), d);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return false;
+            }
 
             Log.Trace($"QuiverCNBCDataDownloader.Run(): Finished in {stopwatch.Elapsed.ToStringInvariant(null)}");
             return true;
@@ -157,6 +311,24 @@ namespace QuantConnect.DataProcessing
             }
 
             throw new Exception($"Request failed with no more retries remaining (retry {_maxRetries}/{_maxRetries})");
+        }
+
+        /// <summary>
+        /// Gets the list of companies
+        /// </summary>
+        /// <returns>List of companies</returns>
+        /// <exception cref="Exception"></exception>
+        private async Task<List<Company>> GetCompanies()
+        {
+            try
+            {
+                var content = await HttpRequester("companies");
+                return JsonConvert.DeserializeObject<List<Company>>(content);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("QuiverDownloader.GetSymbols(): Error parsing companies list", e);
+            }
         }
 
         /// <summary>

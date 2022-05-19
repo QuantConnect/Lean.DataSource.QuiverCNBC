@@ -44,7 +44,7 @@ namespace QuantConnect.DataSource
         /// <summary>
         /// Total dollars obligated under the given contract
         /// </summary>
-        public string[] Traders { get; set; }
+        public string Trader { get; set; }
 
         /// <summary>
         /// Time passed between the date of the data and the time the data became available to us
@@ -87,7 +87,7 @@ namespace QuantConnect.DataSource
         /// <returns>New instance</returns>
         public override BaseData Reader(SubscriptionDataConfig config, string line, DateTime date, bool isLiveMode)
         {
-            var csv = line.Split(','); 
+            var csv = line.Split(',');
 
             return new QuiverCNBCUniverse
             {
@@ -95,7 +95,7 @@ namespace QuantConnect.DataSource
                 Time =  date - _period,
                 Note = csv[2],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[3], true),
-                Traders = csv[4].Split(";"),
+                Trader = csv[4],
             };
         }
 
@@ -114,7 +114,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Symbol} - {Traders.Length} - {Direction}";
+            return $"{Symbol} - {Trader} - {Direction}";
         }
 
         /// <summary>
