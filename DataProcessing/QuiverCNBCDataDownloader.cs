@@ -268,7 +268,7 @@ namespace QuantConnect.DataProcessing
                 {
                     using (var client = new HttpClient())
                     {
-                        client.BaseAddress = new Uri("<base-api-endpoint>");
+                        client.BaseAddress = new Uri("https://api.quiverquant.com/beta/");
                         client.DefaultRequestHeaders.Clear();
 
                         // You must supply your API key in the HTTP header,
