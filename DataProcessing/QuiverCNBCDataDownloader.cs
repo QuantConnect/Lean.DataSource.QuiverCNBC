@@ -170,7 +170,7 @@ namespace QuantConnect.DataProcessing
 
                                     foreach (var contract in recentCNBC)
                                     {
-                                        
+                                        Console.WriteLine($"These are the contracts: {contract}");
                                         if (contract.Trader == null)
                                         {
                                             continue;
@@ -191,6 +191,7 @@ namespace QuantConnect.DataProcessing
                                         var date = $"{contract.Date:yyyyMMdd}";
 
                                         var curRow = $"{date},{contract.Note},{contract.Direction},{contract.Trader}";
+                                        Console.WriteLine($"This is the current row that is created: {curRow}");
 
                                         csvContents.Add(curRow);
 
