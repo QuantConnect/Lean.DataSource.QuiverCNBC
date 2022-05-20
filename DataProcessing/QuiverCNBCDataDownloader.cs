@@ -157,6 +157,7 @@ namespace QuantConnect.DataProcessing
                                     }
 
                                     var result = y.Result;
+                                    Console.WriteLine($"This is the raw data: {result}");
                                     if (string.IsNullOrEmpty(result))
                                     {
                                         // We've already logged inside HttpRequester
