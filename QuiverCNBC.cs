@@ -43,13 +43,13 @@ namespace QuantConnect.DataSource
         [JsonProperty(PropertyName = "Date")]
         [JsonConverter(typeof(DateTimeJsonConverter), "yyyy-MM-dd")]
         public DateTime Date { get; set; }
-        
+
         /// <summary>
         /// Contract description
         /// </summary>
         [ProtoMember(11)]
-        [JsonProperty(PropertyName = "Note")]
-        public string Note { get; set; }
+        [JsonProperty(PropertyName = "Notes")]
+        public string Notes { get; set; }
         
         /// <summary>
         /// Awarding Agency Name
@@ -63,8 +63,8 @@ namespace QuantConnect.DataSource
         /// Total dollars obligated under the given contract
         /// </summary>
         [ProtoMember(13)]
-        [JsonProperty(PropertyName = "Trader")]
-        public string Trader { get; set; }
+        [JsonProperty(PropertyName = "Traders")]
+        public string Traders { get; set; }
 
         /// <summary>
         /// Time passed between the date of the data and the time the data became available to us
@@ -113,9 +113,9 @@ namespace QuantConnect.DataSource
             {
                 Symbol = config.Symbol,
                 Time = parsedDate - _period,
-                Note = csv[1],
+                Notes = csv[1],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[2], true),
-                Trader = csv[3]
+                Traders = csv[3]
             };
         }
 
@@ -130,9 +130,9 @@ namespace QuantConnect.DataSource
                 Symbol = Symbol,
                 Time = Time,
                 EndTime = EndTime,
-                Note = Note,
+                Notes = Notes,
                 Direction = Direction,
-                Trader = Trader,
+                Traders = Traders,
             };
         }
 
@@ -160,7 +160,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Symbol} - {Trader} - {Direction}";
+            return $"{Symbol} - {Traders} - {Direction}";
         }
 
         /// <summary>
