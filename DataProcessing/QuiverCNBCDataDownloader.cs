@@ -195,7 +195,7 @@ namespace QuantConnect.DataProcessing
 
                                         csvContents.Add(curRow);
 
-                                        MastercsvContents[date].Add(curRow);
+                                        MastercsvContents[curTdate].Add(curRow);
 
                                         if (!_canCreateUniverseFiles)
                                             continue;
