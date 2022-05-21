@@ -93,9 +93,9 @@ namespace QuantConnect.DataLibrary.Tests
                 Symbol = Symbol.Empty,
                 Time = DateTime.Today,
                 DataType = MarketDataType.Base,
-                Note = "N/a",
+                Notes = "N/a",
                 Direction = OrderDirection.Buy,
-                Trader = "Jim Cramer",
+                Traders = "Jim Cramer",
             };
         }
     }
