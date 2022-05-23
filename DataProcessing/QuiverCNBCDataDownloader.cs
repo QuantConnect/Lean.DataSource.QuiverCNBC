@@ -195,7 +195,7 @@ namespace QuantConnect.DataProcessing
 
                                         csvContents.Add(curRow);
 
-                                        if (!MastercsvContents.ConstainsKey(curTdate))
+                                        if (!MastercsvContents.ContainsKey(curTdate))
                                         {
                                             MastercsvContents.Add(curTdate, new List<string>());
                                         }
