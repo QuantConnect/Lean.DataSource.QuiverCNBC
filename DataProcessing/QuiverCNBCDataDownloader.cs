@@ -99,7 +99,7 @@ namespace QuantConnect.DataProcessing
 
             try
             {
-                var companies = GetCompanies().Result.DistinctBy(x => x.Ticker).ToList()[0];
+                var companies = GetCompanies().Result.DistinctBy(x => x.Ticker).ToList();
                 var count = companies.Count;
                 var currentPercent = 0.05;
                 var percent = 0.05;
@@ -117,7 +117,9 @@ namespace QuantConnect.DataProcessing
                 IDictionary<DateTime, List<string>> MastercsvContents = new Dictionary<DateTime, List<string>>();
 
                 foreach (var company in companies)
+                for (int start = 0; start < 20 ; start += 1)
                 {
+                    var company = companies[start]
                     // Include tickers that are "defunct".
                     // Remove the tag because it cannot be part of the API endpoint.
                     // This is separate from the NormalizeTicker(...) method since
