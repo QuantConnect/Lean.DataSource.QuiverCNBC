@@ -139,7 +139,7 @@ namespace QuantConnect.DataProcessing
 
                     // Makes sure we don't overrun Quiver rate limits accidentally
                     _indexGate.WaitToProceed();
-                    
+
                     var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
 
                     tasks.Add(
@@ -211,6 +211,10 @@ namespace QuantConnect.DataProcessing
                                     if (csvContents.Count != 0)
                                     {
                                         SaveContentToFile(_destinationFolder, ticker, csvContents);
+                                    }
+
+                                    if(i > 5){
+                                        break;
                                     }
 
                                     var percentageDone = i / count;
