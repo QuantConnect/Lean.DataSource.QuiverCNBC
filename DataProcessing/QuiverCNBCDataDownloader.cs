@@ -138,6 +138,7 @@ namespace QuantConnect.DataProcessing
                     Log.Trace($"QuiverCNBCDataDownloader.Run(): Processing {ticker}");
 
                     // Makes sure we don't overrun Quiver rate limits accidentally
+                    _indexGate.WaitToProceed();
                     
                     var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
 
