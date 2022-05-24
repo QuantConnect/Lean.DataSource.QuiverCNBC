@@ -214,7 +214,7 @@ namespace QuantConnect.DataProcessing
                                     }
 
                                     if(i > 5){
-                                        break;
+                                        return false;
                                     }
 
                                     var percentageDone = i / count;
