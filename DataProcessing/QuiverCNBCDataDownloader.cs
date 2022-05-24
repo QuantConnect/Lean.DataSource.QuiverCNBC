@@ -241,7 +241,7 @@ namespace QuantConnect.DataProcessing
                         foreach (DateTime daytwo in EachDay(minDate, day)){
                             d.AddRange(MastercsvContents[daytwo]);
                         }
-                        SaveContentToFile(Path.Combine(_destinationFolder, "universe"), day.ToString(), d);
+                        SaveContentToFile(Path.Combine(_destinationFolder, "universe"), $"{day:yyyyMMdd}", d);
                     }
 
                 }
