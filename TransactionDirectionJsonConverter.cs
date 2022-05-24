@@ -41,6 +41,7 @@ namespace QuantConnect.DataSource
         /// <returns>Resulting OrderDirection</returns>
         protected override OrderDirection Convert(string value)
         {
+            if (value == null) return OrderDirection.Hold;
             switch (value.ToLowerInvariant())
             {
                 case string a when a.Contains("bearish"):
