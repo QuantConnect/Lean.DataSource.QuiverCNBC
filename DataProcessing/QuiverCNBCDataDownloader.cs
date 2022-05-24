@@ -226,14 +226,9 @@ namespace QuantConnect.DataProcessing
                             )
                     );
 
-                    if (tasks.Count == 10)
-                    {
-                        Task.WaitAll(tasks.ToArray());
-                        tasks.Clear();
-                    }
                 }
 
-                if (tasks.Count == 0)
+                if (tasks.Count != 0)
                 {
                     Task.WaitAll(tasks.ToArray());
                     tasks.Clear();
