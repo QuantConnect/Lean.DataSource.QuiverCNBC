@@ -239,7 +239,11 @@ namespace QuantConnect.DataProcessing
                         var d = new List<string>();
                         //second for loop to collect all prior days up to the current day variable
                         foreach (DateTime daytwo in EachDay(minDate, day)){
-                            d.AddRange(MastercsvContents[daytwo]);
+                            try{
+                                d.AddRange(MastercsvContents[daytwo]);
+                            }catch{
+                                continue;
+                            }
                         }
                         SaveContentToFile(Path.Combine(_destinationFolder, "universe"), $"{day:yyyyMMdd}", d);
                     }
