@@ -76,7 +76,6 @@ namespace QuantConnect.DataProcessing
             _destinationFolder = Path.Combine(destinationFolder, VendorDataName);
             _universeFolder = Path.Combine(_destinationFolder, "universe");
             _clientKey = apiKey ?? Config.Get("vendor-auth-token");
-            Console.WriteLine(_clientKey);
             _canCreateUniverseFiles = Directory.Exists(Path.Combine(_dataFolder, "equity", "usa", "map_files"));
 
             // Represents rate limits of 10 requests per 1.1 second
@@ -139,6 +138,8 @@ namespace QuantConnect.DataProcessing
                     Log.Trace($"QuiverCNBCDataDownloader.Run(): Processing {ticker}");
 
                     // Makes sure we don't overrun Quiver rate limits accidentally
+                    _indexGate.WaitToProceed();
+                    
                     var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
 
                     tasks.Add(
@@ -156,7 +157,6 @@ namespace QuantConnect.DataProcessing
                                     }
 
                                     var result = y.Result;
-                                    Console.WriteLine($"This is the raw data: {result}");
                                     if (string.IsNullOrEmpty(result))
                                     {
                                         // We've already logged inside HttpRequester
@@ -170,7 +170,6 @@ namespace QuantConnect.DataProcessing
 
                                     foreach (var contract in recentCNBC)
                                     {
-                                        Console.WriteLine($"These are the contracts: {contract}");
                                         if (contract.Traders == null)
                                         {
                                             continue;
@@ -191,7 +190,6 @@ namespace QuantConnect.DataProcessing
                                         var date = $"{contract.Date:yyyyMMdd}";
 
                                         var curRow = $"{date},{contract.Notes},{contract.Direction},{contract.Traders}";
-                                        Console.WriteLine($"This is the current row that is created: {curRow}");
 
                                         csvContents.Add(curRow);
 
