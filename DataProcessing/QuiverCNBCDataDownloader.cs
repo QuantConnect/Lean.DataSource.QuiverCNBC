@@ -101,9 +101,7 @@ namespace QuantConnect.DataProcessing
             {
                 var companies = GetCompanies().Result.DistinctBy(x => x.Ticker).ToList();
                 var count = companies.Count;
-                var currentPercent = 0.05;
-                var percent = 0.05;
-                var i = 0;
+                var companiesCompleted = 0;
 
                 Log.Trace(
                     $"QuiverCNBCDataDownloader.Run(): Start processing {count.ToStringInvariant()} companies");
@@ -193,12 +191,10 @@ namespace QuantConnect.DataProcessing
 
                                         csvContents.Add(curRow);
 
-                                        if (!MastercsvContents.ContainsKey(curTdate))
+                                        if (!_tempData.ContainsKey(curTdate))
                                         {
-                                            MastercsvContents.Add(curTdate, new List<string>());
+                                            _tempData.Add(curTdate, new List<string>());
                                         }
-
-                                        MastercsvContents[curTdate].Add(curRow);
 
                                         if (!_canCreateUniverseFiles)
                                             continue;
@@ -208,17 +204,17 @@ namespace QuantConnect.DataProcessing
                                         queue.Enqueue($"{sid},{ticker},{curRow}");
                                     }
 
+
                                     if (csvContents.Count != 0)
                                     {
                                         SaveContentToFile(_destinationFolder, ticker, csvContents);
                                     }
 
-                                    var percentageDone = i / count;
-                                    if (percentageDone >= currentPercent)
+                                    var newCompaniesCompleted = Interlocked.Increment(ref companiesCompleted);
+                                    if (newCompaniesCompleted % 100 == 0)
                                     {
                                         Log.Trace(
-                                            $"QuiverCNBCDataDownloader.Run(): {percentageDone.ToStringInvariant("P2")} complete");
-                                        currentPercent += percent;
+                                            $"QuiverCNBCDataDownloader.Run(): {newCompaniesCompleted}/{count} complete");
                                     }
                                 }
                             )
@@ -226,27 +222,16 @@ namespace QuantConnect.DataProcessing
 
                 }
 
-                if (tasks.Count != 0)
-                {
-                    Task.WaitAll(tasks.ToArray());
-                    tasks.Clear();
-                    // we will save the files by group dates
-                    // tasks are all done and the MastercsvContents is filled need to seperate the 
-                    // collected data by dates they occured
-                    foreach (DateTime day in EachDay(minDate, today)){
-                        var d = new List<string>();
-                        //second for loop to collect all prior days up to the current day variable
-                        foreach (DateTime daytwo in EachDay(minDate, day)){
-                            try{
-                                d.AddRange(MastercsvContents[daytwo]);
-                            }catch{
-                                continue;
-                            }
-                        }
-                        SaveContentToFile(Path.Combine(_destinationFolder, "universe"), $"{day:yyyyMMdd}", d);
-                    }
+                if (tasks.Count != 10) continue;
 
+                Task.WaitAll(tasks.ToArray());
+
+                foreach (var kvp in _tempData){
+                    SaveContentToFile(_universeFolder, kvp.Key, kvp.Value);
                 }
+
+                _tempData.Clear();
+                tasks.Clear();
             }
             catch (Exception e)
             {

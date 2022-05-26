@@ -70,6 +70,7 @@ namespace QuantConnect.DataSource
                     Globals.DataFolder,
                     "alternative",
                     "quiver",
+                    "cnbc",
                     "universe",
                     $"{date.ToStringInvariant(DateFormat.EightCharacter)}.csv"
                 ),

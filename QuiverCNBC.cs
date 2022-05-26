@@ -90,6 +90,7 @@ namespace QuantConnect.DataSource
                     Globals.DataFolder,
                     "alternative",
                     "quiver",
+                    "cnbc",
                     $"{config.Symbol.Value.ToLowerInvariant()}.csv"
                 ),
                 SubscriptionTransportMedium.LocalFile
