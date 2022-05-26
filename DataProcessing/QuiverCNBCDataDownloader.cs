@@ -114,8 +114,10 @@ namespace QuantConnect.DataProcessing
                 // value: List<String> csv content of that specific date
                 IDictionary<DateTime, List<string>> MastercsvContents = new Dictionary<DateTime, List<string>>();
 
-                foreach (var company in companies)
+                //foreach (var company in companies)
+                for (var i = 1; i <= 10; i++)
                 {
+                    var company = companies[i]
                     // Include tickers that are "defunct".
                     // Remove the tag because it cannot be part of the API endpoint.
                     // This is separate from the NormalizeTicker(...) method since
