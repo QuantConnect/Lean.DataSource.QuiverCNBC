@@ -117,7 +117,7 @@ namespace QuantConnect.DataProcessing
                 //foreach (var company in companies)
                 for (var i = 1; i <= 10; i++)
                 {
-                    var company = companies[i]
+                    var company = companies[i];
                     // Include tickers that are "defunct".
                     // Remove the tag because it cannot be part of the API endpoint.
                     // This is separate from the NormalizeTicker(...) method since
