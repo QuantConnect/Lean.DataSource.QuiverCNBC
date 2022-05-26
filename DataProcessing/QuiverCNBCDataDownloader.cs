@@ -191,11 +191,6 @@ namespace QuantConnect.DataProcessing
 
                                         csvContents.Add(curRow);
 
-                                        if (!_tempData.ContainsKey(curTdate))
-                                        {
-                                            _tempData.Add(curTdate, new List<string>());
-                                        }
-
                                         if (!_canCreateUniverseFiles)
                                             continue;
 
