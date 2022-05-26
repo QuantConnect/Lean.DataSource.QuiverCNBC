@@ -145,7 +145,6 @@ namespace QuantConnect.DataProcessing
                             .ContinueWith(
                                 y =>
                                 {
-                                    i++;
 
                                     if (y.IsFaulted)
                                     {
@@ -215,18 +214,17 @@ namespace QuantConnect.DataProcessing
                             )
                     );
 
+                    if (tasks.Count != 10) continue;
+
+                    Task.WaitAll(tasks.ToArray());
+
+                    foreach (var kvp in _tempData){
+                        SaveContentToFile(_universeFolder, kvp.Key, kvp.Value);
+                    }
+
+                    _tempData.Clear();
+                    tasks.Clear();
                 }
-
-                if (tasks.Count != 10) continue;
-
-                Task.WaitAll(tasks.ToArray());
-
-                foreach (var kvp in _tempData){
-                    SaveContentToFile(_universeFolder, kvp.Key, kvp.Value);
-                }
-
-                _tempData.Clear();
-                tasks.Clear();
             }
             catch (Exception e)
             {
