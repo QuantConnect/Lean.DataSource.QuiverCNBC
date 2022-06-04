@@ -41,7 +41,7 @@ namespace QuantConnect.DataProcessing
     public class QuiverCNBCDataDownloader : IDisposable
     {
         public const string VendorName = "Quiver";
-        public const string VendorDataName = "CNBC";
+        public const string VendorDataName = "cnbc";
         
         private readonly string _destinationFolder;
         private readonly string _universeFolder;
@@ -76,12 +76,13 @@ namespace QuantConnect.DataProcessing
             _destinationFolder = Path.Combine(destinationFolder, VendorDataName);
             _universeFolder = Path.Combine(_destinationFolder, "universe");
             _clientKey = apiKey ?? Config.Get("vendor-auth-token");
+
             _canCreateUniverseFiles = Directory.Exists(Path.Combine(_dataFolder, "equity", "usa", "map_files"));
 
-            // Represents rate limits of 10 requests per 1.1 second
-            _indexGate = new RateGate(10, TimeSpan.FromSeconds(1.1));
+            // Represents rate limits of 100 requests per 60 seconds
+            _indexGate = new RateGate(100, TimeSpan.FromSeconds(60));
 
-            Directory.CreateDirectory(_destinationFolder);
+            // Directory.CreateDirectory(_destinationFolder);
             Directory.CreateDirectory(_universeFolder);
         }
 
@@ -112,7 +113,7 @@ namespace QuantConnect.DataProcessing
                 // This is the dictionary that
                 // key: Date
                 // value: List<String> csv content of that specific date
-                IDictionary<DateTime, List<string>> MastercsvContents = new Dictionary<DateTime, List<string>>();
+                // IDictionary<DateTime, List<string>> MastercsvContents = new Dictionary<DateTime, List<string>>();
 
                 foreach (var company in companies)
                 {
@@ -137,8 +138,6 @@ namespace QuantConnect.DataProcessing
 
                     // Makes sure we don't overrun Quiver rate limits accidentally
                     _indexGate.WaitToProceed();
-
-                    var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
 
                     tasks.Add(
                         HttpRequester($"live/cnbc?ticker={ticker}")
@@ -185,14 +184,15 @@ namespace QuantConnect.DataProcessing
                                         }
 
                                         var date = $"{contract.Date:yyyyMMdd}";
+                                        var note = contract.Notes != null ? contract.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
+                                        var curRow = $"{note},{contract.Direction},{contract.Traders.Trim()}";
 
-                                        var curRow = $"{date},{contract.Notes},{contract.Direction},{contract.Traders}";
-
-                                        csvContents.Add(curRow);
+                                        csvContents.Add($"{date},{curRow}");
 
                                         if (!_canCreateUniverseFiles)
                                             continue;
 
+                                        var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
                                         var queue = _tempData.GetOrAdd(date, new ConcurrentQueue<string>());
                                         //universe creation
                                         queue.Enqueue($"{sid},{ticker},{curRow}");
@@ -340,10 +340,11 @@ namespace QuantConnect.DataProcessing
                 .OrderBy(x => DateTime.ParseExact(x.Split(',').First(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal))
                 .ToList();
 
-            var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.tmp");
-            File.WriteAllLines(tempPath, finalLines);
-            var tempFilePath = new FileInfo(tempPath);
-            tempFilePath.MoveTo(finalPath, true);
+            // var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.tmp");
+            // File.WriteAllLines(tempPath, finalLines);
+            // var tempFilePath = new FileInfo(tempPath);
+            // tempFilePath.MoveTo(finalPath, true);
+            File.WriteAllLines(finalPath, finalLines);
         }
 
         /// <summary>
@@ -398,11 +399,11 @@ namespace QuantConnect.DataProcessing
         /// creates an IEnumerable for a range of dates
         /// </summary>
         /// <returns>IEnumerable for a range of dates</returns>
-        public IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
-        {
-            for(var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
-                yield return day;
-        }
+        // public IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
+        // {
+        //    for(var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
+        //        yield return day;
+        //}
 
         /// <summary>
         /// Disposes of unmanaged resources
