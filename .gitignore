@@ -4,6 +4,8 @@
 *.obj
 *.elf
 *.pyc
+*.csv
+*.DS_Store
 
 # Visual Studio Project Items:
 *.suo
