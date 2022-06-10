@@ -16,7 +16,6 @@
 
 using System;
 using NodaTime;
-using ProtoBuf;
 using System.IO;
 using QuantConnect.Data;
 using System.Collections.Generic;
@@ -28,9 +27,10 @@ namespace QuantConnect.DataSource
     /// <summary>
     /// Example custom data type
     /// </summary>
-    [ProtoContract(SkipConstructor = true)]
     public class QuiverCNBCUniverse : BaseData
     {
+        private static readonly TimeSpan _period = TimeSpan.FromDays(1);
+
         /// <summary>
         /// Contract description
         /// </summary>
@@ -45,11 +45,6 @@ namespace QuantConnect.DataSource
         /// Total dollars obligated under the given contract
         /// </summary>
         public string Trader { get; set; }
-
-        /// <summary>
-        /// Time passed between the date of the data and the time the data became available to us
-        /// </summary>
-        private TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
         /// Time the data became available
@@ -93,7 +88,7 @@ namespace QuantConnect.DataSource
             return new QuiverCNBCUniverse
             {
                 Symbol = new Symbol(SecurityIdentifier.Parse(csv[0]), csv[1]),
-                Time =  date - _period,
+                Time =  date,
                 Note = csv[2],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[3], true),
                 Trader = csv[4],
