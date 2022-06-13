@@ -20,7 +20,6 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NodaTime;
-using ProtoBuf;
 using QuantConnect.Data;
 using QuantConnect.Orders;
 using QuantConnect.Util;
@@ -33,13 +32,13 @@ namespace QuantConnect.DataSource
     /// <summary>
     /// Example custom data type
     /// </summary>
-    [ProtoContract(SkipConstructor = true)]
     public class QuiverCNBC : BaseData
     {
-         /// <summary>
+        private static readonly TimeSpan _period = TimeSpan.FromDays(1);
+
+        /// <summary>
         /// Date that the CNBC spend was reported
         /// </summary>
-        [ProtoMember(10)]
         [JsonProperty(PropertyName = "Date")]
         [JsonConverter(typeof(DateTimeJsonConverter), "yyyy-MM-dd")]
         public DateTime Date { get; set; }
@@ -47,14 +46,12 @@ namespace QuantConnect.DataSource
         /// <summary>
         /// Contract description
         /// </summary>
-        [ProtoMember(11)]
         [JsonProperty(PropertyName = "Notes")]
         public string Notes { get; set; }
         
         /// <summary>
         /// Awarding Agency Name
         /// </summary>
-        [ProtoMember(12)]
         [JsonProperty(PropertyName = "Direction")]
         [JsonConverter(typeof(TransactionDirectionJsonConverter))]
         public OrderDirection Direction { get; set; }
@@ -62,14 +59,8 @@ namespace QuantConnect.DataSource
         /// <summary>
         /// Total dollars obligated under the given contract
         /// </summary>
-        [ProtoMember(13)]
         [JsonProperty(PropertyName = "Traders")]
         public string Traders { get; set; }
-
-        /// <summary>
-        /// Time passed between the date of the data and the time the data became available to us
-        /// </summary>
-        private TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
         /// Time the data became available
@@ -110,13 +101,16 @@ namespace QuantConnect.DataSource
             var csv = line.Split(',');
 
             var parsedDate = Parse.DateTimeExact(csv[0], "yyyyMMdd");
+
             return new QuiverCNBC
             {
                 Symbol = config.Symbol,
-                Time = parsedDate - _period,
+                Date = parsedDate,
                 Notes = csv[1],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[2], true),
-                Traders = csv[3]
+                Traders = csv[3],
+
+                Time = parsedDate
             };
         }
 
@@ -131,6 +125,7 @@ namespace QuantConnect.DataSource
                 Symbol = Symbol,
                 Time = Time,
                 EndTime = EndTime,
+                Date = Date,
                 Notes = Notes,
                 Direction = Direction,
                 Traders = Traders,
