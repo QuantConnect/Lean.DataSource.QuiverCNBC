@@ -30,7 +30,7 @@ using System.Collections.Generic;
 namespace QuantConnect.DataSource
 {
     /// <summary>
-    /// Example custom data type
+    ///  Personal stock advice by CNBC
     /// </summary>
     public class QuiverCNBC : BaseData
     {
@@ -44,20 +44,20 @@ namespace QuantConnect.DataSource
         public DateTime Date { get; set; }
 
         /// <summary>
-        /// Contract description
+        /// Extra Information
         /// </summary>
         [JsonProperty(PropertyName = "Notes")]
         public string Notes { get; set; }
         
         /// <summary>
-        /// Awarding Agency Name
+        /// Direction of trade
         /// </summary>
         [JsonProperty(PropertyName = "Direction")]
         [JsonConverter(typeof(TransactionDirectionJsonConverter))]
         public OrderDirection Direction { get; set; }
 
         /// <summary>
-        /// Total dollars obligated under the given contract
+        /// Individual Name
         /// </summary>
         [JsonProperty(PropertyName = "Traders")]
         public string Traders { get; set; }

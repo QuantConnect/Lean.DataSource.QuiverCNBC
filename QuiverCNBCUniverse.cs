@@ -25,26 +25,26 @@ using QuantConnect.Orders;
 namespace QuantConnect.DataSource
 {
     /// <summary>
-    /// Example custom data type
+    /// Universe Selection helper class for QuiverQuant Congress dataset
     /// </summary>
     public class QuiverCNBCUniverse : BaseData
     {
         private static readonly TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
-        /// Contract description
+        /// Extra Information
         /// </summary>
-        public string Note { get; set; }
+        public string Notes { get; set; }
         
         /// <summary>
-        /// Awarding Agency Name
+        /// Direction of trade
         /// </summary>
         public OrderDirection Direction { get; set; }
 
         /// <summary>
-        /// Total dollars obligated under the given contract
+        /// Individual Name
         /// </summary>
-        public string Trader { get; set; }
+        public string Traders { get; set; }
 
         /// <summary>
         /// Time the data became available
