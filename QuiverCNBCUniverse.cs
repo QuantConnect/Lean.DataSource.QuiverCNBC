@@ -89,9 +89,9 @@ namespace QuantConnect.DataSource
             {
                 Symbol = new Symbol(SecurityIdentifier.Parse(csv[0]), csv[1]),
                 Time =  date,
-                Note = csv[2],
+                Notes = csv[2],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[3], true),
-                Trader = csv[4],
+                Traders = csv[4],
             };
         }
 
@@ -110,7 +110,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Symbol} - {Trader} - {Direction}";
+            return $"{Symbol} - {Traders} - {Direction}";
         }
 
         /// <summary>
