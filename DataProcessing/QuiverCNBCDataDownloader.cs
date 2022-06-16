@@ -82,7 +82,6 @@ namespace QuantConnect.DataProcessing
             // Represents rate limits of 100 requests per 60 seconds
             _indexGate = new RateGate(100, TimeSpan.FromSeconds(60));
 
-            // Directory.CreateDirectory(_destinationFolder);
             Directory.CreateDirectory(_universeFolder);
         }
 
@@ -110,18 +109,8 @@ namespace QuantConnect.DataProcessing
                 var tasks = new List<Task>();
                 var minDate = today;
 
-                // This is the dictionary that
-                // key: Date
-                // value: List<String> csv content of that specific date
-                // IDictionary<DateTime, List<string>> MastercsvContents = new Dictionary<DateTime, List<string>>();
-
                 foreach (var company in companies)
                 {
-                    // Include tickers that are "defunct".
-                    // Remove the tag because it cannot be part of the API endpoint.
-                    // This is separate from the NormalizeTicker(...) method since
-                    // we don't convert tickers with `-`s into the format we can successfully
-                    // index mapfiles with.
                     var quiverTicker = company.Ticker;
                     string ticker;
 
@@ -185,7 +174,7 @@ namespace QuantConnect.DataProcessing
 
                                         var date = $"{contract.Date:yyyyMMdd}";
                                         var note = contract.Notes != null ? contract.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
-                                        var curRow = $"{note},{contract.Direction},{contract.Traders.Trim()}";
+                                        var curRow = $"{note},{contract.Direction},{contract.Traders.Trim().ToLower()}";
 
                                         csvContents.Add($"{date},{curRow}");
 
@@ -340,10 +329,6 @@ namespace QuantConnect.DataProcessing
                 .OrderBy(x => DateTime.ParseExact(x.Split(',').First(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal))
                 .ToList();
 
-            // var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.tmp");
-            // File.WriteAllLines(tempPath, finalLines);
-            // var tempFilePath = new FileInfo(tempPath);
-            // tempFilePath.MoveTo(finalPath, true);
             File.WriteAllLines(finalPath, finalLines);
         }
 
@@ -394,16 +379,6 @@ namespace QuantConnect.DataProcessing
             [JsonProperty(PropertyName = "Ticker")]
             public string Ticker { get; set; }
         }
-
-        /// <summary>
-        /// creates an IEnumerable for a range of dates
-        /// </summary>
-        /// <returns>IEnumerable for a range of dates</returns>
-        // public IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
-        // {
-        //    for(var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
-        //        yield return day;
-        //}
 
         /// <summary>
         /// Disposes of unmanaged resources

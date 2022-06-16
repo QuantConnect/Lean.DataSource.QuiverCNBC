@@ -25,26 +25,26 @@ using QuantConnect.Orders;
 namespace QuantConnect.DataSource
 {
     /// <summary>
-    /// Example custom data type
+    /// Universe Selection helper class for QuiverQuant Congress dataset
     /// </summary>
     public class QuiverCNBCUniverse : BaseData
     {
         private static readonly TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
-        /// Contract description
+        /// Extra Information
         /// </summary>
-        public string Note { get; set; }
+        public string Notes { get; set; }
         
         /// <summary>
-        /// Awarding Agency Name
+        /// Direction of trade
         /// </summary>
         public OrderDirection Direction { get; set; }
 
         /// <summary>
-        /// Total dollars obligated under the given contract
+        /// Individual Name
         /// </summary>
-        public string Trader { get; set; }
+        public string Traders { get; set; }
 
         /// <summary>
         /// Time the data became available
@@ -89,9 +89,9 @@ namespace QuantConnect.DataSource
             {
                 Symbol = new Symbol(SecurityIdentifier.Parse(csv[0]), csv[1]),
                 Time =  date,
-                Note = csv[2],
+                Notes = csv[2],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[3], true),
-                Trader = csv[4],
+                Traders = csv[4],
             };
         }
 
@@ -110,7 +110,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Symbol} - {Trader} - {Direction}";
+            return $"{Symbol} - {Traders} - {Direction}";
         }
 
         /// <summary>
