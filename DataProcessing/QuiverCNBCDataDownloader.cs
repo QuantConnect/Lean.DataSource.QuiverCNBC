@@ -174,17 +174,23 @@ namespace QuantConnect.DataProcessing
 
                                         var date = $"{curTdate:yyyyMMdd}";
                                         var note = contract.Notes != null ? contract.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
-                                        var curRow = $"{note},{contract.Direction},{contract.Traders.Trim().ToLower()}";
 
-                                        csvContents.Add($"{date},{curRow}");
+                                        string[] traders = contract.Traders.Split(',');
 
-                                        if (!_canCreateUniverseFiles)
-                                            continue;
+                                        foreach (var trader in traders)
+                                        {
+                                            var curRow = $"{note},{contract.Direction},{trader.Trim().ToLower()}";
 
-                                        var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, curTdate);
-                                        var queue = _tempData.GetOrAdd(date, new ConcurrentQueue<string>());
-                                        //universe creation
-                                        queue.Enqueue($"{sid},{ticker},{curRow}");
+                                            csvContents.Add($"{date},{curRow}");
+
+                                            if (!_canCreateUniverseFiles)
+                                                continue;
+
+                                            var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
+                                            var queue = _tempData.GetOrAdd(date, new ConcurrentQueue<string>());
+                                            //universe creation
+                                            queue.Enqueue($"{sid},{ticker},{curRow}");
+                                        }
                                     }
 
 
