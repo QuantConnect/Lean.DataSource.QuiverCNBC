@@ -172,7 +172,7 @@ namespace QuantConnect.DataProcessing
                                             minDate = curTdate;
                                         }
 
-                                        var date = $"{contract.Date:yyyyMMdd}";
+                                        var date = $"{curTdate:yyyyMMdd}";
                                         var note = contract.Notes != null ? contract.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
 
                                         string[] traders = contract.Traders.Split(',');
