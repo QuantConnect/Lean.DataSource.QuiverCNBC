@@ -172,7 +172,7 @@ namespace QuantConnect.DataProcessing
                                             minDate = curTdate;
                                         }
 
-                                        var date = $"{contract.Date:yyyyMMdd}";
+                                        var date = $"{curTdate:yyyyMMdd}";
                                         var note = contract.Notes != null ? contract.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
                                         var curRow = $"{note},{contract.Direction},{contract.Traders.Trim().ToLower()}";
 
@@ -181,7 +181,7 @@ namespace QuantConnect.DataProcessing
                                         if (!_canCreateUniverseFiles)
                                             continue;
 
-                                        var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
+                                        var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, curTdate);
                                         var queue = _tempData.GetOrAdd(date, new ConcurrentQueue<string>());
                                         //universe creation
                                         queue.Enqueue($"{sid},{ticker},{curRow}");
