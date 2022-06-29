@@ -71,7 +71,6 @@ namespace QuantConnect.DataLibrary.Tests
                 Symbol = Symbol.Empty,
                 Time = DateTime.Today,
                 DataType = MarketDataType.Base,
-                Date = DateTime.Today,
                 Notes = "N/a",
                 Direction = OrderDirection.Buy,
                 Traders = "Jim Cramer"

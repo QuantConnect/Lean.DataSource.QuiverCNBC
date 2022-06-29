@@ -149,7 +149,7 @@ namespace QuantConnect.DataProcessing
                                     }
 
                                     var recentCNBC =
-                                        JsonConvert.DeserializeObject<List<QuiverCNBC>>(result,
+                                        JsonConvert.DeserializeObject<List<RawCNBC>>(result,
                                             _jsonSerializerSettings);
                                     var csvContents = new List<string>();
 
@@ -384,6 +384,16 @@ namespace QuantConnect.DataProcessing
             /// </summary>
             [JsonProperty(PropertyName = "Ticker")]
             public string Ticker { get; set; }
+        }
+
+        private class RawCNBC : QuiverCNBC
+        {
+            /// <summary>
+            /// Date that the CNBC spend was reported
+            /// </summary>
+            [JsonProperty(PropertyName = "Date")]
+            [JsonConverter(typeof(DateTimeJsonConverter), "yyyy-MM-dd")]
+            public DateTime Date { get; set; }
         }
 
         /// <summary>

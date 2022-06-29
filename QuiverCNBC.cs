@@ -37,13 +37,6 @@ namespace QuantConnect.DataSource
         private static readonly TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
-        /// Date that the CNBC spend was reported
-        /// </summary>
-        [JsonProperty(PropertyName = "Date")]
-        [JsonConverter(typeof(DateTimeJsonConverter), "yyyy-MM-dd")]
-        public DateTime Date { get; set; }
-
-        /// <summary>
         /// Extra Information
         /// </summary>
         [JsonProperty(PropertyName = "Notes")]
@@ -105,7 +98,6 @@ namespace QuantConnect.DataSource
             return new QuiverCNBC
             {
                 Symbol = config.Symbol,
-                Date = parsedDate,
                 Notes = csv[1],
                 Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[2], true),
                 Traders = csv[3],
@@ -124,8 +116,6 @@ namespace QuantConnect.DataSource
             {
                 Symbol = Symbol,
                 Time = Time,
-                EndTime = EndTime,
-                Date = Date,
                 Notes = Notes,
                 Direction = Direction,
                 Traders = Traders,
