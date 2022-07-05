@@ -37,7 +37,7 @@ namespace QuantConnect.DataSource
         private static readonly TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
-        /// Extra Information
+        /// Contract description
         /// </summary>
         [JsonProperty(PropertyName = "Notes")]
         public string Notes { get; set; }
