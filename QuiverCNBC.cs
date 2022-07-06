@@ -15,17 +15,11 @@
 */
 
 using System;
-using System.Globalization;
-using System.IO;
+using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using NodaTime;
 using QuantConnect.Data;
 using QuantConnect.Orders;
-using QuantConnect.Util;
-using static QuantConnect.StringExtensions;
-using System.Collections.Generic;
-
 
 namespace QuantConnect.DataSource
 {
@@ -59,27 +53,6 @@ namespace QuantConnect.DataSource
         /// Time the data became available
         /// </summary>
         public override DateTime EndTime => Time + _period;
-
-        /// <summary>
-        /// Return the URL string source of the file. This will be converted to a stream
-        /// </summary>
-        /// <param name="config">Configuration object</param>
-        /// <param name="date">Date of this source file</param>
-        /// <param name="isLiveMode">true if we're in live mode, false for backtesting mode</param>
-        /// <returns>String URL of source file.</returns>
-        public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
-        {
-            return new SubscriptionDataSource(
-                Path.Combine(
-                    Globals.DataFolder,
-                    "alternative",
-                    "quiver",
-                    "cnbc",
-                    $"{config.Symbol.Value.ToLowerInvariant()}.csv"
-                ),
-                SubscriptionTransportMedium.LocalFile
-            );
-        }
 
         /// <summary>
         /// Parses the data from the line provided and loads it into LEAN
@@ -123,6 +96,14 @@ namespace QuantConnect.DataSource
         }
 
         /// <summary>
+        /// Converts the instance to string
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{Symbol} - {Traders} - {Direction}";
+        }
+
+        /// <summary>
         /// Indicates whether the data source is tied to an underlying symbol and requires that corporate events be applied to it as well, such as renames and delistings
         /// </summary>
         /// <returns>false</returns>
@@ -139,14 +120,6 @@ namespace QuantConnect.DataSource
         public override bool IsSparseData()
         {
             return true;
-        }
-
-        /// <summary>
-        /// Converts the instance to string
-        /// </summary>
-        public override string ToString()
-        {
-            return $"{Symbol} - {Traders} - {Direction}";
         }
 
         /// <summary>

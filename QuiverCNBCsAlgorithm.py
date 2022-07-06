@@ -23,20 +23,25 @@ class QuiverCNBCAlgorithm(QCAlgorithm):
         self.SetStartDate(2020, 10, 7)   #Set Start Date
         self.SetEndDate(2020, 10, 11)    #Set End Date
         self.equity_symbol = self.AddEquity("SPY", Resolution.Daily).Symbol
-        self.custom_data_symbol = self.AddData(QuiverCNBC, self.equity_symbol).Symbol
+        self.custom_data_symbol = self.AddData(QuiverCNBCs, self.equity_symbol).Symbol
 
     def OnData(self, slice):
         ''' OnData event is the primary entry point for your algorithm. Each new data point will be pumped in here.
 
         :param Slice slice: Slice object keyed by symbol containing the stock data
         '''
-        data = slice.Get(QuiverCNBC)
+        data = slice.Get(QuiverCNBCs)
         if data:
-            custom_data = data[self.custom_data_symbol]
-            if custom_data.Direction == OrderDirection.Buy:
-                self.SetHoldings(self.equitySymbol, 1)
-            elif custom_data.Direction == OrderDirection.Sell:
-                self.SetHoldings(self.equitySymbol, -1)
+            for cnbcs in data:
+                self.Log(f"{Time} {cnbcs.ToString()}")
+
+                for cnbc in cnbcs:
+                    cnbc = QuiverCNBC(cnbc)
+                    
+                    if cnbc.Direction == OrderDirection.Buy:
+                        self.SetHoldings(self.equitySymbol, 1)
+                    elif cnbc.Direction == OrderDirection.Sell:
+                        self.SetHoldings(self.equitySymbol, -1)
 
     def OnOrderEvent(self, orderEvent):
         ''' Order fill event handler. On an order fill update the resulting information is passed to this method.

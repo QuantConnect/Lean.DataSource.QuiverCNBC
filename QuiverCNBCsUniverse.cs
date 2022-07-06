@@ -19,7 +19,6 @@ using NodaTime;
 using System.IO;
 using QuantConnect.Data;
 using System.Collections.Generic;
-using System.Globalization;
 using QuantConnect.Orders;
 
 namespace QuantConnect.DataSource
@@ -27,7 +26,7 @@ namespace QuantConnect.DataSource
     /// <summary>
     /// Universe Selection helper class for QuiverQuant Congress dataset
     /// </summary>
-    public class QuiverCNBCUniverse : BaseData
+    public class QuiverCNBCsUniverse : BaseData
     {
         private static readonly TimeSpan _period = TimeSpan.FromDays(1);
 
@@ -85,7 +84,7 @@ namespace QuantConnect.DataSource
         {
             var csv = line.Split(',');
 
-            return new QuiverCNBCUniverse
+            return new QuiverCNBCsUniverse
             {
                 Symbol = new Symbol(SecurityIdentifier.Parse(csv[0]), csv[1]),
                 Time =  date,

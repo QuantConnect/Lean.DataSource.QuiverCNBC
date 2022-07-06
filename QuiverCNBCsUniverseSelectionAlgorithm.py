@@ -28,7 +28,7 @@ class QuiverCNBCUniverseSelectionAlgorithm(QCAlgorithm):
         self.SetCash(100000)
 
         # add a custom universe data source (defaults to usa-equity)
-        self.AddUniverse(QuiverCNBCUniverse, "QuiverCNBCUniverse", Resolution.Daily, self.UniverseSelection)
+        self.AddUniverse(QuiverCNBCsUniverse, "QuiverCNBCsUniverse", Resolution.Daily, self.UniverseSelection)
 
     def UniverseSelection(self, data):
         ''' Selected the securities

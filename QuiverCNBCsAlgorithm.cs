@@ -38,7 +38,7 @@ namespace QuantConnect.DataLibrary.Tests
             SetStartDate(2013, 10, 07);  //Set Start Date
             SetEndDate(2013, 10, 11);    //Set End Date
             _equitySymbol = AddEquity("SPY").Symbol;
-            _customDataSymbol = AddData<QuiverCNBC>(_equitySymbol).Symbol;
+            _customDataSymbol = AddData<QuiverCNBCs>(_equitySymbol).Symbol;
         }
 
         /// <summary>
@@ -47,17 +47,24 @@ namespace QuantConnect.DataLibrary.Tests
         /// <param name="slice">Slice object keyed by symbol containing the stock data</param>
         public override void OnData(Slice slice)
         {
-            var data = slice.Get<QuiverCNBC>();
+            var data = slice.Get<QuiverCNBCs>();
             if (!data.IsNullOrEmpty())
             {
-                // based on the custom data property we will buy or short the underlying equity
-                if (data[_customDataSymbol].Direction == OrderDirection.Buy)
+                foreach (var cnbcs in data.Values)
                 {
-                    SetHoldings(_equitySymbol, 1);
-                }
-                else if (data[_customDataSymbol].Direction == OrderDirection.Sell)
-                {
-                    SetHoldings(_equitySymbol, -1);
+                    Log($"{Time} {cnbcs.ToString()}");
+                    foreach (QuiverCNBC cnbc in cnbcs)
+                    {
+                        // based on the custom data property we will buy or short the underlying equity
+                        if (cnbc.Direction == OrderDirection.Buy)
+                        {
+                            SetHoldings(_equitySymbol, 1);
+                        }
+                        else if (cnbc.Direction == OrderDirection.Sell)
+                        {
+                            SetHoldings(_equitySymbol, -1);
+                        }
+                    }
                 }
             }
         }
