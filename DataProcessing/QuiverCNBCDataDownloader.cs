@@ -14,7 +14,6 @@
 */
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -45,16 +44,11 @@ namespace QuantConnect.DataProcessing
         
         private readonly string _destinationFolder;
         private readonly string _universeFolder;
+        private readonly string _processedDataDirectory;
         private readonly string _clientKey;
         private readonly string _dataFolder = Globals.DataFolder;
         private readonly bool _canCreateUniverseFiles;
         private readonly int _maxRetries = 5;
-        private static readonly List<char> _defunctDelimiters = new()
-        {
-            '-',
-            '_'
-        };
-        private ConcurrentDictionary<string, ConcurrentQueue<string>> _tempData = new();
         
         private readonly JsonSerializerSettings _jsonSerializerSettings = new()
         {
@@ -70,11 +64,14 @@ namespace QuantConnect.DataProcessing
         /// Creates a new instance of <see cref="QuiverCNBC"/>
         /// </summary>
         /// <param name="destinationFolder">The folder where the data will be saved</param>
+        /// <param name="processedDataDirectory">The folder where the data will be read from</param>
         /// <param name="apiKey">The Vendor API key</param>
-        public QuiverCNBCDataDownloader(string destinationFolder, string apiKey = null)
+        public QuiverCNBCDataDownloader(string destinationFolder, string processedDataDirectory, string apiKey = null)
         {
-            _destinationFolder = Path.Combine(destinationFolder, VendorDataName);
+            _destinationFolder = Path.Combine(destinationFolder, VendorName, VendorDataName);
             _universeFolder = Path.Combine(_destinationFolder, "universe");
+            _processedDataDirectory = Path.Combine(processedDataDirectory, VendorName, VendorDataName);
+
             _clientKey = apiKey ?? Config.Get("vendor-auth-token");
 
             _canCreateUniverseFiles = Directory.Exists(Path.Combine(_dataFolder, "equity", "usa", "map_files"));
@@ -86,140 +83,66 @@ namespace QuantConnect.DataProcessing
         }
 
         /// <summary>
-        /// Runs the instance of the object.
+        /// Runs the instance of the object with a given date.
         /// </summary>
+        /// <param name="processDate">The date of data to be fetched and processed</param>
         /// <returns>True if process all downloads successfully</returns>
-        public bool Run()
+        public bool Run(DateTime processDate)
         {
             var stopwatch = Stopwatch.StartNew();
+            Log.Trace($"QuiverCNBCDataDownloader.Run(): Start downloading/processing QuiverQuant CNBC data");
+
             var today = DateTime.UtcNow.Date;
-
-            var mapFileProvider = new LocalZipMapFileProvider();
-            mapFileProvider.Initialize(new DefaultDataProvider());
-
             try
             {
-                var companies = GetCompanies().Result.DistinctBy(x => x.Ticker).ToList();
-                var count = companies.Count;
-                var companiesCompleted = 0;
-
-                Log.Trace(
-                    $"QuiverCNBCDataDownloader.Run(): Start processing {count.ToStringInvariant()} companies");
-
-                var tasks = new List<Task>();
-                var minDate = today;
-
-                foreach (var company in companies)
+                if (processDate >= today || processDate == DateTime.MinValue)
                 {
-                    var quiverTicker = company.Ticker;
-                    string ticker;
-
-
-                    if (!TryNormalizeDefunctTicker(quiverTicker, out ticker))
-                    {
-                        Log.Error(
-                            $"QuiverCNBCDataDownloader(): Defunct ticker {quiverTicker} is unable to be parsed. Continuing...");
-                        continue;
-                    }
-
-                    // Begin processing ticker with a normalized value
-                    Log.Trace($"QuiverCNBCDataDownloader.Run(): Processing {ticker}");
-
-                    // Makes sure we don't overrun Quiver rate limits accidentally
-                    _indexGate.WaitToProceed();
-
-                    tasks.Add(
-                        HttpRequester($"live/cnbc?ticker={ticker}")
-                            .ContinueWith(
-                                y =>
-                                {
-
-                                    if (y.IsFaulted)
-                                    {
-                                        Log.Error(
-                                            $"QuiverCNBCDataDownloader.Run(): Failed to get data for {company}");
-                                        return;
-                                    }
-
-                                    var result = y.Result;
-                                    if (string.IsNullOrEmpty(result))
-                                    {
-                                        // We've already logged inside HttpRequester
-                                        return;
-                                    }
-
-                                    var recentCNBC =
-                                        JsonConvert.DeserializeObject<List<QuiverCNBC>>(result,
-                                            _jsonSerializerSettings);
-                                    var csvContents = new List<string>();
-
-                                    foreach (var contract in recentCNBC)
-                                    {
-                                        if (contract.Traders == null)
-                                        {
-                                            continue;
-                                        }
-
-                                        var curTdate = contract.Date;
-
-                                        if (curTdate == today)
-                                        {
-                                            Log.Trace($"Encountered data from today for {ticker}: {today:yyyy-MM-dd} - Skipping");
-                                            continue;
-                                        }
-
-                                        if( DateTime.Compare(curTdate, minDate) < 0){
-                                            minDate = curTdate;
-                                        }
-
-                                        var date = $"{curTdate:yyyyMMdd}";
-                                        var note = contract.Notes != null ? contract.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
-
-                                        string[] traders = contract.Traders.Split(',');
-
-                                        foreach (var trader in traders)
-                                        {
-                                            var curRow = $"{note},{contract.Direction},{trader.Trim().ToLower()}";
-
-                                            csvContents.Add($"{date},{curRow}");
-
-                                            if (!_canCreateUniverseFiles)
-                                                continue;
-
-                                            var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, today);
-                                            var queue = _tempData.GetOrAdd(date, new ConcurrentQueue<string>());
-                                            //universe creation
-                                            queue.Enqueue($"{sid},{ticker},{curRow}");
-                                        }
-                                    }
-
-
-                                    if (csvContents.Count != 0)
-                                    {
-                                        SaveContentToFile(_destinationFolder, ticker, csvContents);
-                                    }
-
-                                    var newCompaniesCompleted = Interlocked.Increment(ref companiesCompleted);
-                                    if (newCompaniesCompleted % 100 == 0)
-                                    {
-                                        Log.Trace(
-                                            $"QuiverCNBCDataDownloader.Run(): {newCompaniesCompleted}/{count} complete");
-                                    }
-                                }
-                            )
-                    );
-
-                    if (tasks.Count != 10) continue;
-
-                    Task.WaitAll(tasks.ToArray());
-
-                    foreach (var kvp in _tempData){
-                        SaveContentToFile(_universeFolder, kvp.Key, kvp.Value);
-                    }
-
-                    _tempData.Clear();
-                    tasks.Clear();
+                    Log.Trace($"Encountered data from invalid date: {processDate:yyyy-MM-dd} - Skipping");
+                    return false;
                 }
+
+                var quiverCnbcData = HttpRequester($"live/cnbc?date={processDate:yyyyMMdd}").SynchronouslyAwaitTaskResult();
+                if (string.IsNullOrWhiteSpace(quiverCnbcData))
+                {
+                    // We've already logged inside HttpRequester
+                    return false;
+                }
+
+                var cnbcByDate = JsonConvert.DeserializeObject<List<RawCNBC>>(quiverCnbcData, _jsonSerializerSettings);
+
+                var cnbcByTicker = new Dictionary<string, List<string>>();
+                var universeCsvContents = new List<string>();
+
+                var mapFileProvider = new LocalZipMapFileProvider();
+                mapFileProvider.Initialize(new DefaultDataProvider());
+
+                foreach (var cnbc in cnbcByDate)
+                {
+                    var ticker = cnbc.Ticker.ToUpperInvariant();
+
+                    if (!cnbcByTicker.TryGetValue(ticker, out var _))
+                    {
+                        cnbcByTicker.Add(ticker, new List<string>());
+                    }
+
+                    var note = cnbc.Notes != null ? cnbc.Notes.Replace(Environment.NewLine, string.Empty).Trim() : null;
+                    var curRow = $"{note},{cnbc.Direction},{cnbc.Traders.Trim()}";
+                    cnbcByTicker[ticker].Add($"{processDate:yyyyMMdd},{curRow}");
+
+                    var sid = SecurityIdentifier.GenerateEquity(ticker, Market.USA, true, mapFileProvider, processDate);
+                    universeCsvContents.Add($"{sid},{ticker},{curRow}");
+                }
+
+                if (!_canCreateUniverseFiles)
+                {
+                    return false;
+                }
+                else if (universeCsvContents.Any())
+                {
+                    SaveContentToFile(_universeFolder, $"{processDate:yyyyMMdd}", universeCsvContents);
+                }
+
+                cnbcByTicker.DoForEach(kvp => SaveContentToFile(_destinationFolder, kvp.Key, kvp.Value));
             }
             catch (Exception e)
             {
@@ -291,24 +214,6 @@ namespace QuantConnect.DataProcessing
         }
 
         /// <summary>
-        /// Gets the list of companies
-        /// </summary>
-        /// <returns>List of companies</returns>
-        /// <exception cref="Exception"></exception>
-        private async Task<List<Company>> GetCompanies()
-        {
-            try
-            {
-                var content = await HttpRequester("companies");
-                return JsonConvert.DeserializeObject<List<Company>>(content);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("QuiverDownloader.GetSymbols(): Error parsing companies list", e);
-            }
-        }
-
-        /// <summary>
         /// Saves contents to disk, deleting existing zip files
         /// </summary>
         /// <param name="destinationFolder">Final destination of the data</param>
@@ -318,12 +223,23 @@ namespace QuantConnect.DataProcessing
         {
             name = name.ToLowerInvariant();
             var finalPath = Path.Combine(destinationFolder, $"{name}.csv");
-            var finalFileExists = File.Exists(finalPath);
+            string filePath;
+
+            if (destinationFolder.Contains("universe"))
+            {
+                filePath = Path.Combine(_processedDataDirectory, "universe", $"{name}.csv");
+            }
+            else
+            {
+                filePath = Path.Combine(_processedDataDirectory, $"{name}.csv");
+            }
+
+            var finalFileExists = File.Exists(filePath);
 
             var lines = new HashSet<string>(contents);
             if (finalFileExists)
             {
-                foreach (var line in File.ReadAllLines(finalPath))
+                foreach (var line in File.ReadAllLines(filePath))
                 {
                     lines.Add(line);
                 }
@@ -338,46 +254,14 @@ namespace QuantConnect.DataProcessing
             File.WriteAllLines(finalPath, finalLines);
         }
 
-        /// <summary>
-        /// Tries to normalize a potentially defunct ticker into a normal ticker.
-        /// </summary>
-        /// <param name="ticker">Ticker as received from Estimize</param>
-        /// <param name="nonDefunctTicker">Set as the non-defunct ticker</param>
-        /// <returns>true for success, false for failure</returns>
-        private static bool TryNormalizeDefunctTicker(string ticker, out string nonDefunctTicker)
-        {
-            // The "defunct" indicator can be in any capitalization/case
-            if (ticker.IndexOf("defunct", StringComparison.OrdinalIgnoreCase) > 0)
-            {
-                foreach (var delimChar in _defunctDelimiters)
-                {
-                    var length = ticker.IndexOf(delimChar);
-
-                    // Continue until we exhaust all delimiters
-                    if (length == -1)
-                    {
-                        continue;
-                    }
-
-                    nonDefunctTicker = ticker[..length].Trim();
-                    return true;
-                }
-
-                nonDefunctTicker = string.Empty;
-                return false;
-            }
-
-            nonDefunctTicker = ticker;
-            return true;
-        }
-
-        private class Company
+        private class RawCNBC: QuiverCNBC
         {
             /// <summary>
-            /// The name of the company
+            /// Date that the CNBC data was received
             /// </summary>
-            [JsonProperty(PropertyName = "Name")]
-            public string Name { get; set; }
+            [JsonProperty(PropertyName = "Date")]
+            [JsonConverter(typeof(DateTimeJsonConverter), "yyyy-MM-dd")]
+            public DateTime Date { get; set; }
 
             /// <summary>
             /// The ticker/symbol for the company

@@ -15,12 +15,12 @@
 */
 
 using System;
-using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using QuantConnect.Data;
 using QuantConnect.DataSource;
+using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Orders;
 
 namespace QuantConnect.DataLibrary.Tests
@@ -43,6 +43,15 @@ namespace QuantConnect.DataLibrary.Tests
         public void Clone()
         {
             var expected = CreateNewInstance();
+            var result = expected.Clone();
+
+            AssertAreEqual(expected, result);
+        }
+
+        [Test]
+        public void CloneCollection()
+        {
+            var expected = CreateNewCollectionInstance();
             var result = expected.Clone();
 
             AssertAreEqual(expected, result);
@@ -71,10 +80,34 @@ namespace QuantConnect.DataLibrary.Tests
                 Symbol = Symbol.Empty,
                 Time = DateTime.Today,
                 DataType = MarketDataType.Base,
-                Date = DateTime.Today,
                 Notes = "N/a",
                 Direction = OrderDirection.Buy,
                 Traders = "Jim Cramer"
+            };
+        }
+
+        private BaseDataCollection CreateNewCollectionInstance()
+        {
+            return new QuiverCNBCs
+            {
+                new QuiverCNBC
+                {
+                    Symbol = Symbol.Empty,
+                    Time = DateTime.Today,
+                    DataType = MarketDataType.Base,
+                    Notes = "N/a",
+                    Direction = OrderDirection.Buy,
+                    Traders = "Jim Cramer"
+                },
+                new QuiverCNBC
+                {
+                    Symbol = Symbol.Empty,
+                    Time = DateTime.Today,
+                    DataType = MarketDataType.Base,
+                    Notes = "N/a",
+                    Direction = OrderDirection.Buy,
+                    Traders = "Jim Cramer"
+                }
             };
         }
     }

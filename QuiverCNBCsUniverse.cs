@@ -15,44 +15,62 @@
 */
 
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 using NodaTime;
+using System.IO;
 using QuantConnect.Data;
+using System.Collections.Generic;
 using QuantConnect.Orders;
 
 namespace QuantConnect.DataSource
 {
     /// <summary>
-    ///  Personal stock advice by CNBC
+    /// Universe Selection helper class for QuiverQuant Congress dataset
     /// </summary>
-    public class QuiverCNBC : BaseData
+    public class QuiverCNBCsUniverse : BaseData
     {
         private static readonly TimeSpan _period = TimeSpan.FromDays(1);
 
         /// <summary>
-        /// Contract description
+        /// Extra Information
         /// </summary>
-        [JsonProperty(PropertyName = "Notes")]
         public string Notes { get; set; }
         
         /// <summary>
         /// Direction of trade
         /// </summary>
-        [JsonProperty(PropertyName = "Direction")]
-        [JsonConverter(typeof(TransactionDirectionJsonConverter))]
         public OrderDirection Direction { get; set; }
 
         /// <summary>
         /// Individual Name
         /// </summary>
-        [JsonProperty(PropertyName = "Traders")]
         public string Traders { get; set; }
 
         /// <summary>
         /// Time the data became available
         /// </summary>
         public override DateTime EndTime => Time + _period;
+
+        /// <summary>
+        /// Return the URL string source of the file. This will be converted to a stream
+        /// </summary>
+        /// <param name="config">Configuration object</param>
+        /// <param name="date">Date of this source file</param>
+        /// <param name="isLiveMode">true if we're in live mode, false for backtesting mode</param>
+        /// <returns>String URL of source file.</returns>
+        public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
+        {
+            return new SubscriptionDataSource(
+                Path.Combine(
+                    Globals.DataFolder,
+                    "alternative",
+                    "quiver",
+                    "cnbc",
+                    "universe",
+                    $"{date.ToStringInvariant(DateFormat.EightCharacter)}.csv"
+                ),
+                SubscriptionTransportMedium.LocalFile
+            );
+        }
 
         /// <summary>
         /// Parses the data from the line provided and loads it into LEAN
@@ -66,50 +84,14 @@ namespace QuantConnect.DataSource
         {
             var csv = line.Split(',');
 
-            var parsedDate = Parse.DateTimeExact(csv[0], "yyyyMMdd");
-
-            return new QuiverCNBC
+            return new QuiverCNBCsUniverse
             {
-                Symbol = config.Symbol,
-                Notes = csv[1],
-                Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[2], true),
-                Traders = csv[3],
-
-                Time = parsedDate
+                Symbol = new Symbol(SecurityIdentifier.Parse(csv[0]), csv[1]),
+                Time =  date,
+                Notes = csv[2],
+                Direction = (OrderDirection)Enum.Parse(typeof(OrderDirection), csv[3], true),
+                Traders = csv[4],
             };
-        }
-
-        /// <summary>
-        /// Clones the data
-        /// </summary>
-        /// <returns>A clone of the object</returns>
-        public override BaseData Clone()
-        {
-            return new QuiverCNBC
-            {
-                Symbol = Symbol,
-                Time = Time,
-                Notes = Notes,
-                Direction = Direction,
-                Traders = Traders,
-            };
-        }
-
-        /// <summary>
-        /// Converts the instance to string
-        /// </summary>
-        public override string ToString()
-        {
-            return $"{Symbol} - {Traders} - {Direction}";
-        }
-
-        /// <summary>
-        /// Indicates whether the data source is tied to an underlying symbol and requires that corporate events be applied to it as well, such as renames and delistings
-        /// </summary>
-        /// <returns>false</returns>
-        public override bool RequiresMapping()
-        {
-            return true;
         }
 
         /// <summary>
@@ -120,6 +102,14 @@ namespace QuantConnect.DataSource
         public override bool IsSparseData()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Converts the instance to string
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{Symbol} - {Traders} - {Direction}";
         }
 
         /// <summary>

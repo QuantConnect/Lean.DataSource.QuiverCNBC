@@ -19,8 +19,8 @@
     <Compile Remove="DataProcessing\**" />
     <EmbeddedResource Remove="DataProcessing\**" />
     <None Remove="DataProcessing\**" />
-    <Compile Remove="QuiverCNBCAlgorithm.cs" />
-    <Compile Remove="QuiverCNBCUniverseSelectionAlgorithm.cs" />
+    <Compile Remove="QuiverCNBCsAlgorithm.cs" />
+    <Compile Remove="QuiverCNBCsUniverseSelectionAlgorithm.cs" />
     <None Remove=".gitignore" />
   </ItemGroup>
 </Project>
