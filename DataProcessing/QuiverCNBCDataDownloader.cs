@@ -39,7 +39,7 @@ namespace QuantConnect.DataProcessing
     /// </summary>
     public class QuiverCNBCDataDownloader : IDisposable
     {
-        public const string VendorName = "Quiver";
+        public const string VendorName = "quiver";
         public const string VendorDataName = "cnbc";
         
         private readonly string _destinationFolder;
