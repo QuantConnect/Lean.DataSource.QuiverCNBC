@@ -50,7 +50,7 @@ namespace QuantConnect.DataSource
                     $"{config.Symbol.Value.ToLowerInvariant()}.csv"
                 ),
                 SubscriptionTransportMedium.LocalFile,
-                FileFormat.UnfoldingCollection
+                FileFormat.FoldingCollection
             );
         }
 
