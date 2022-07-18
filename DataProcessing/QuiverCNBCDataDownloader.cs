@@ -118,7 +118,14 @@ namespace QuantConnect.DataProcessing
 
                 foreach (var cnbc in cnbcByDate)
                 {
-                    var ticker = cnbc.Ticker.ToUpperInvariant();
+                    var ticker = cnbc.Ticker;
+                    if (ticker == null) 
+                    {
+                        Log.Error($"QuiverCNBCDataDownloader.Run(): Null value for Ticker on {processDate:yyyyMMdd}");
+                        continue;
+                    }
+
+                    ticker = ticker.Split(':').Last().Replace("\"", string.Empty).ToUpperInvariant().Trim();
 
                     if (!cnbcByTicker.TryGetValue(ticker, out var _))
                     {

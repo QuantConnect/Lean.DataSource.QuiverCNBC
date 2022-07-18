@@ -32,12 +32,10 @@ class QuiverCNBCAlgorithm(QCAlgorithm):
         '''
         data = slice.Get(QuiverCNBCs)
         if data:
-            for cnbcs in data:
-                self.Log(f"{Time} {cnbcs.ToString()}")
+            for cnbcs in data.values():
+                self.Log(f"{self.Time} {cnbcs.ToString()}")
 
                 for cnbc in cnbcs:
-                    cnbc = QuiverCNBC(cnbc)
-                    
                     if cnbc.Direction == OrderDirection.Buy:
                         self.SetHoldings(self.equitySymbol, 1)
                     elif cnbc.Direction == OrderDirection.Sell:
