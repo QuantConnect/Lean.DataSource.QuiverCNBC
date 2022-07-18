@@ -33,7 +33,7 @@ class QuiverCNBCAlgorithm(QCAlgorithm):
         data = slice.Get(QuiverCNBCs)
         if data:
             for cnbcs in data.values():
-                self.Log(f"{Time} {cnbcs.ToString()}")
+                self.Log(f"{self.Time} {cnbcs.ToString()}")
 
                 for cnbc in cnbcs:
                     if cnbc.Direction == OrderDirection.Buy:
