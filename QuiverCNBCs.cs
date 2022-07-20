@@ -78,6 +78,7 @@ namespace QuantConnect.DataSource
             {
                 Symbol = Symbol,
                 Time = Time,
+                EndTime = EndTime,
                 Data = Data?.ToList(point => point.Clone())
             };
         }
