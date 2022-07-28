@@ -44,19 +44,25 @@ namespace QuantConnect.DataSource
             if (value == null) return OrderDirection.Hold;
             switch (value.ToLowerInvariant())
             {
-                case string a when a.Contains("bearish"):
-                    return OrderDirection.Buy;
                 case string a when a.Contains("bullish"):
                     return OrderDirection.Buy;
                 case string a when a.Contains("purchase"):
                     return OrderDirection.Buy;
                 case string a when a.Contains("buy"):
                     return OrderDirection.Buy;
+                case string a when a.Contains("final trade"):
+                    return OrderDirection.Buy;
                 case string a when a.Contains("short"):
                     return OrderDirection.Sell;
                 case string a when a.Contains("sale"):
                     return OrderDirection.Sell;
                 case string a when a.Contains("sell"):
+                    return OrderDirection.Sell;
+                case string a when a.Contains("bearish"):
+                    return OrderDirection.Sell;
+                case string a when a.Contains("final trade - sell"):
+                    return OrderDirection.Sell;
+                case string a when a.Contains("final trade - sale"):
                     return OrderDirection.Sell;
                 default:
                     return OrderDirection.Hold;
